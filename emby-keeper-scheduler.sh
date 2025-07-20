@@ -60,10 +60,16 @@ if [ "$CURRENT_HOUR" -ge "$START_HOUR" ] && [ "$CURRENT_HOUR" -le "$END_HOUR" ];
     }
     
     # 运行Python脚本，重定向输出到日志
-    if [ -f "$PYTHON_ENV" ]; then
+    if command -v uv &> /dev/null && [ -f "$SCRIPT_DIR/pyproject.toml" ]; then
+        # 使用 uv 运行（推荐）
+        uv run "$PYTHON_SCRIPT" >> "$LOG_DIR/emby-alive.log" 2>&1
+        EXIT_CODE=$?
+    elif [ -f "$PYTHON_ENV" ]; then
+        # 使用虚拟环境
         "$PYTHON_ENV" "$PYTHON_SCRIPT" >> "$LOG_DIR/emby-alive.log" 2>&1
         EXIT_CODE=$?
     else
+        # 回退到系统Python
         python3 "$PYTHON_SCRIPT" >> "$LOG_DIR/emby-alive.log" 2>&1
         EXIT_CODE=$?
     fi

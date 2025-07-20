@@ -37,6 +37,8 @@ mkdir -p "$LOG_DIR"
 echo "📋 复制应用文件..."
 cp main.py "$INSTALL_DIR/"
 cp emby.json "$INSTALL_DIR/"
+cp pyproject.toml "$INSTALL_DIR/"
+cp uv.lock "$INSTALL_DIR/"
 cp emby-keeper-scheduler.sh "$INSTALL_DIR/"
 chmod +x "$INSTALL_DIR/emby-keeper-scheduler.sh"
 
@@ -48,15 +50,50 @@ chmod 755 "$INSTALL_DIR"
 chmod 644 "$INSTALL_DIR"/*.py
 chmod 600 "$INSTALL_DIR/emby.json"  # 保护配置文件
 
-# 5. 安装Python依赖
-echo "🐍 安装Python依赖..."
-if command -v python3-venv &> /dev/null; then
-    sudo -u "$SERVICE_USER" python3 -m venv "$INSTALL_DIR/.venv"
-    sudo -u "$SERVICE_USER" "$INSTALL_DIR/.venv/bin/pip" install aiohttp
-    echo "✅ Python虚拟环境创建成功"
+# 5. 安装 uv 和 Python 依赖
+echo "🐍 安装 uv 和 Python 依赖..."
+
+# 检查并安装 uv
+if ! command -v uv &> /dev/null; then
+    echo "📦 安装 uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="$HOME/.cargo/bin:$PATH"
+    
+    # 确保 uv 在系统路径中可用
+    if [ -f "$HOME/.cargo/bin/uv" ]; then
+        ln -sf "$HOME/.cargo/bin/uv" /usr/local/bin/uv
+    fi
+    
+    if command -v uv &> /dev/null; then
+        echo "✅ uv 安装成功"
+    else
+        echo "❌ uv 安装失败，回退到传统方式"
+        # 回退到传统安装方式
+        if command -v python3 &> /dev/null; then
+            python3 -m pip install aiohttp
+        else
+            echo "❌ 无法找到 Python3，请手动安装依赖"
+            exit 1
+        fi
+    fi
 else
-    echo "⚠️  python3-venv 未安装，将使用系统Python"
-    pip3 install aiohttp
+    echo "ℹ️  uv 已安装"
+fi
+
+# 使用 uv 安装依赖
+if command -v uv &> /dev/null; then
+    echo "📦 使用 uv 安装项目依赖..."
+    cd "$INSTALL_DIR"
+    sudo -u "$SERVICE_USER" uv sync
+    echo "✅ 依赖安装成功"
+else
+    echo "⚠️  uv 不可用，使用传统方式安装依赖"
+    if command -v python3 &> /dev/null; then
+        python3 -m pip install aiohttp
+    else
+        echo "❌ 无法安装依赖"
+        exit 1
+    fi
 fi
 
 # 6. 安装systemd服务
