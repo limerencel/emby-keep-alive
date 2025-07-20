@@ -1,0 +1,16 @@
+[Unit]
+Description=Emby Keep-Alive Timer
+Documentation=https://github.com/user/emby-keeper
+Requires=emby-keeper.service
+
+[Timer]
+# 每天在22:00-23:00之间的随机时间执行
+OnCalendar=*-*-* 22:00:00
+RandomizedDelaySec=3600
+Persistent=true
+
+# 防止重复执行
+AccuracySec=1m
+
+[Install]
+WantedBy=timers.target

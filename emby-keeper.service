@@ -1,0 +1,38 @@
+[Unit]
+Description=Emby Keep-Alive Service
+Documentation=https://github.com/user/emby-keeper
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=emby-keeper
+Group=emby-keeper
+WorkingDirectory=/opt/emby-keeper
+Environment=PYTHONPATH=/opt/emby-keeper
+Environment=PYTHONUNBUFFERED=1
+
+# 使用调度脚本而不是直接运行Python
+ExecStart=/opt/emby-keeper/emby-keeper-scheduler.sh
+
+# 日志配置
+StandardOutput=append:/var/log/emby-keeper/service.log
+StandardError=append:/var/log/emby-keeper/service-error.log
+
+# 安全配置
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/emby-keeper /opt/emby-keeper
+
+# 资源限制
+MemoryMax=512M
+CPUQuota=50%
+
+# 失败处理
+Restart=no
+RestartSec=300
+
+[Install]
+WantedBy=multi-user.target
