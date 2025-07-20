@@ -24,6 +24,10 @@
 
 2. **安装依赖**
    ```bash
+   # 使用 uv 安装依赖（推荐）
+   uv sync
+   
+   # 或者使用传统方式
    pip install -r requirements.txt
    ```
 
@@ -35,6 +39,10 @@
 
 4. **运行程序**
    ```bash
+   # 使用 uv 运行（推荐）
+   uv run main.py
+   
+   # 或者使用传统方式
    python main.py
    ```
 
