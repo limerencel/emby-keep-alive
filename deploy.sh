@@ -111,15 +111,93 @@ else
     fi
 fi
 
-# 6. 安装systemd服务
-echo "⚙️  安装systemd服务..."
-cp emby-keeper.service /etc/systemd/system/
-cp emby-keeper.timer /etc/systemd/system/
+# 6. 创建systemd服务配置
+echo "⚙️  创建systemd服务配置..."
+
+# 创建服务文件
+cat > /etc/systemd/system/emby-keeper.service << 'EOF'
+[Unit]
+Description=Emby Keep-Alive Service
+Documentation=https://github.com/user/emby-alive
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=emby-alive
+Group=emby-alive
+WorkingDirectory=/opt/emby-alive
+Environment=PYTHONPATH=/opt/emby-alive
+Environment=PYTHONUNBUFFERED=1
+
+# 使用调度脚本而不是直接运行Python
+ExecStart=/opt/emby-alive/emby-keeper-scheduler.sh
+
+# 日志配置
+StandardOutput=append:/var/log/emby-alive/service.log
+StandardError=append:/var/log/emby-alive/service-error.log
+
+# 安全配置
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/emby-alive /opt/emby-alive
+
+# 资源限制
+MemoryMax=512M
+CPUQuota=50%
+
+# 失败处理
+Restart=no
+RestartSec=300
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# 创建定时器文件
+cat > /etc/systemd/system/emby-keeper.timer << 'EOF'
+[Unit]
+Description=Emby Keep-Alive Timer
+Documentation=https://github.com/user/emby-alive
+Requires=emby-keeper.service
+
+[Timer]
+# 每天在22:00-23:00之间的随机时间执行
+OnCalendar=*-*-* 22:00:00
+RandomizedDelaySec=3600
+Persistent=true
+
+# 防止重复执行
+AccuracySec=1m
+
+[Install]
+WantedBy=timers.target
+EOF
+
+# 重载systemd配置
 systemctl daemon-reload
+echo "✅ systemd服务配置创建成功"
 
 # 7. 配置日志轮转
 echo "📜 配置日志轮转..."
-cp emby-keeper-logrotate /etc/logrotate.d/emby-keeper
+cat > /etc/logrotate.d/emby-keeper << 'EOF'
+/var/log/emby-alive/*.log {
+    daily
+    rotate 30
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 644 emby-alive emby-alive
+    postrotate
+        # 重启服务以重新打开日志文件（如果需要）
+        systemctl reload-or-restart emby-keeper.timer 2>/dev/null || true
+    endscript
+}
+EOF
+echo "✅ 日志轮转配置创建成功"
 
 # 8. 启用并启动服务
 echo "🔄 启用服务..."
