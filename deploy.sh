@@ -6,10 +6,10 @@
 set -e
 
 # 配置
-SERVICE_USER="emby-keeper"
-SERVICE_GROUP="emby-keeper"
-INSTALL_DIR="/opt/emby-keeper"
-LOG_DIR="/var/log/emby-keeper"
+SERVICE_USER="emby-alive"
+SERVICE_GROUP="emby-alive"
+INSTALL_DIR="/opt/emby-alive"
+LOG_DIR="/var/log/emby-alive"
 
 echo "🚀 开始部署 Emby Keep-Alive 服务..."
 
@@ -87,7 +87,7 @@ echo ""
 echo "📋 常用命令:"
 echo "  查看服务状态: systemctl status emby-keeper.timer"
 echo "  查看日志:     journalctl -u emby-keeper.service -f"
-echo "  查看应用日志: tail -f $LOG_DIR/emby-keeper.log"
+echo "  查看应用日志: tail -f $LOG_DIR/emby-alive.log"
 echo "  手动执行:     systemctl start emby-keeper.service"
 echo "  停止服务:     systemctl stop emby-keeper.timer"
 echo ""

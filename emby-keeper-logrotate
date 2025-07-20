@@ -1,11 +1,11 @@
-/var/log/emby-keeper/*.log {
+/var/log/emby-alive/*.log {
     daily
     rotate 30
     compress
     delaycompress
     missingok
     notifempty
-    create 644 emby-keeper emby-keeper
+    create 644 emby-alive emby-alive
     postrotate
         # 重启服务以重新打开日志文件（如果需要）
         systemctl reload-or-restart emby-keeper.timer 2>/dev/null || true

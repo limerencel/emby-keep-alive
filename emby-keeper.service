@@ -1,30 +1,30 @@
 [Unit]
 Description=Emby Keep-Alive Service
-Documentation=https://github.com/user/emby-keeper
+Documentation=https://github.com/user/emby-alive
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=oneshot
-User=emby-keeper
-Group=emby-keeper
-WorkingDirectory=/opt/emby-keeper
-Environment=PYTHONPATH=/opt/emby-keeper
+User=emby-alive
+Group=emby-alive
+WorkingDirectory=/opt/emby-alive
+Environment=PYTHONPATH=/opt/emby-alive
 Environment=PYTHONUNBUFFERED=1
 
 # 使用调度脚本而不是直接运行Python
-ExecStart=/opt/emby-keeper/emby-keeper-scheduler.sh
+ExecStart=/opt/emby-alive/emby-keeper-scheduler.sh
 
 # 日志配置
-StandardOutput=append:/var/log/emby-keeper/service.log
-StandardError=append:/var/log/emby-keeper/service-error.log
+StandardOutput=append:/var/log/emby-alive/service.log
+StandardError=append:/var/log/emby-alive/service-error.log
 
 # 安全配置
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/var/log/emby-keeper /opt/emby-keeper
+ReadWritePaths=/var/log/emby-alive /opt/emby-alive
 
 # 资源限制
 MemoryMax=512M

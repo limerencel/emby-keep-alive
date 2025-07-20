@@ -4,10 +4,10 @@
 # 在指定时间范围内随机选择一个时间运行保活程序
 
 # 配置
-SCRIPT_DIR="/opt/emby-keeper"
+SCRIPT_DIR="/opt/emby-alive"
 PYTHON_SCRIPT="$SCRIPT_DIR/main.py"
 PYTHON_ENV="$SCRIPT_DIR/.venv/bin/python"
-LOG_DIR="/var/log/emby-keeper"
+LOG_DIR="/var/log/emby-alive"
 LOG_FILE="$LOG_DIR/scheduler.log"
 
 # 确保日志目录存在
@@ -61,10 +61,10 @@ if [ "$CURRENT_HOUR" -ge "$START_HOUR" ] && [ "$CURRENT_HOUR" -le "$END_HOUR" ];
     
     # 运行Python脚本，重定向输出到日志
     if [ -f "$PYTHON_ENV" ]; then
-        "$PYTHON_ENV" "$PYTHON_SCRIPT" >> "$LOG_DIR/emby-keeper.log" 2>&1
+        "$PYTHON_ENV" "$PYTHON_SCRIPT" >> "$LOG_DIR/emby-alive.log" 2>&1
         EXIT_CODE=$?
     else
-        python3 "$PYTHON_SCRIPT" >> "$LOG_DIR/emby-keeper.log" 2>&1
+        python3 "$PYTHON_SCRIPT" >> "$LOG_DIR/emby-alive.log" 2>&1
         EXIT_CODE=$?
     fi
     

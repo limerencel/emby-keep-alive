@@ -1,6 +1,6 @@
 [Unit]
 Description=Emby Keep-Alive Timer
-Documentation=https://github.com/user/emby-keeper
+Documentation=https://github.com/user/emby-alive
 Requires=emby-keeper.service
 
 [Timer]
