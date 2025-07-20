@@ -84,10 +84,25 @@ fi
 if command -v uv &> /dev/null; then
     echo "📦 使用 uv 安装项目依赖..."
     cd "$INSTALL_DIR"
-    sudo -u "$SERVICE_USER" uv sync
-    echo "✅ 依赖安装成功"
+    
+    # 使用当前用户（有 uv 权限）来运行 uv sync，然后修改所有权
+    uv sync
+    
+    # 修改虚拟环境所有权给服务用户
+    if [ -d "$INSTALL_DIR/.venv" ]; then
+        chown -R "$SERVICE_USER:$SERVICE_GROUP" "$INSTALL_DIR/.venv"
+        echo "✅ uv 依赖安装成功，所有权已转移"
+    else
+        echo "⚠️  uv sync 未创建虚拟环境，回退到传统方式"
+        sudo -u "$SERVICE_USER" python3 -m venv "$INSTALL_DIR/.venv"
+        sudo -u "$SERVICE_USER" "$INSTALL_DIR/.venv/bin/pip" install aiohttp
+        echo "✅ 传统方式依赖安装成功"
+    fi
 else
     echo "⚠️  uv 不可用，使用传统方式安装依赖"
+    sudo -u "$SERVICE_USER" python3 -m venv "$INSTALL_DIR/.venv"
+    sudo -u "$SERVICE_USER" "$INSTALL_DIR/.venv/bin/pip" install aiohttp
+    echo "✅ 传统方式依赖安装成功"
     if command -v python3 &> /dev/null; then
         python3 -m pip install aiohttp
     else
