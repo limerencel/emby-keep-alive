@@ -53,7 +53,18 @@ if ! command -v uv &> /dev/null; then
     echo "📦 安装 uv..."
     curl -LsSf https://astral.sh/uv/install.sh | sh
     export PATH="$HOME/.cargo/bin:$PATH"
-    ln -sf "$HOME/.cargo/bin/uv" /usr/local/bin/uv
+fi
+
+# 确保 uv 在系统路径中可用
+if command -v uv &> /dev/null; then
+    UV_PATH=$(which uv)
+    echo "✅ 找到 uv: $UV_PATH"
+    # 创建系统级符号链接，方便 sudo 使用
+    ln -sf "$UV_PATH" /usr/local/bin/uv
+    echo "✅ 创建系统级 uv 链接成功"
+else
+    echo "❌ uv 安装失败"
+    exit 1
 fi
 
 # 6. 安装依赖
