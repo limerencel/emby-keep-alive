@@ -47,52 +47,29 @@ chmod 755 "$INSTALL_DIR"
 chmod 644 "$INSTALL_DIR"/*.py
 chmod 600 "$INSTALL_DIR/emby.json"
 
-# 5. 安装 uv（如果需要）
+# 5. 检查 uv 安装
 echo "🐍 检查 uv 安装..."
 if ! command -v uv &> /dev/null; then
-    echo "📦 安装 uv..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    export PATH="$HOME/.cargo/bin:$PATH"
-fi
-
-# 确保 uv 在系统路径中可用
-if command -v uv &> /dev/null; then
-    UV_PATH=$(which uv)
-    echo "✅ 找到 uv: $UV_PATH"
-    # 复制到系统目录（而不是符号链接），避免路径访问权限问题
-    cp "$UV_PATH" /usr/local/bin/uv
-    chmod +x /usr/local/bin/uv
-    echo "✅ 创建系统级 uv 链接成功"
-    
-    # 测试sudo uv是否工作
-    if sudo uv --version &>/dev/null; then
-        echo "✅ sudo uv 测试成功"
-    else
-        echo "❌ sudo uv 测试失败，将使用绝对路径"
-        # 如果还是不行，直接使用绝对路径
-        UV_COMMAND="$UV_PATH"
-    fi
-else
-    echo "❌ uv 安装失败"
+    echo "❌ uv 命令不存在，请先安装 uv："
+    echo "   curl -LsSf https://astral.sh/uv/install.sh | sh"
     exit 1
 fi
 
-# 设置uv命令变量
-UV_COMMAND=${UV_COMMAND:-"uv"}
+echo "✅ 找到 uv: $(which uv)"
 
 # 6. 安装依赖
 echo "📦 安装项目依赖..."
 cd "$INSTALL_DIR"
-sudo -u "$SERVICE_USER" "$UV_COMMAND" sync
+sudo -u "$SERVICE_USER" uv sync
 echo "✅ 依赖安装完成"
 
 # 7. 创建运行脚本
 echo "📝 创建运行脚本..."
-cat > "$INSTALL_DIR/run.sh" << EOF
+cat > "$INSTALL_DIR/run.sh" << 'EOF'
 #!/bin/bash
 cd /opt/emby-alive
 export PYTHONUNBUFFERED=1
-$UV_COMMAND run main.py >> /var/log/emby-alive/emby-alive.log 2>&1
+uv run main.py >> /var/log/emby-alive/emby-alive.log 2>&1
 EOF
 
 chmod +x "$INSTALL_DIR/run.sh"
